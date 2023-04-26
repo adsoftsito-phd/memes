@@ -22,40 +22,38 @@ export default class AddTutorial extends Component {
       title: "",
       description: "",
       published: false,
-
       submitted: false,
+      file : null,
+      url: ""
     };
   }
 
-
-  handleChange(e) {
-    if (e.target.files[0])
-        setFile(e.target.files[0]);
+  onChangeFile(e) {
+     console.log(e.target.files[0]);
+     this.setState ({
+	file : e.target.files[0],
+     });
   }
 
-  handleUpload(e) {
+	
+  handleUpload(e, file) {
     e.preventDefault();
-    
-    const uploadTask = storage.ref('/image/${file.name}').put(file);
+    console.log(file);
+    alert(file.name);
 
+    const uploadTask = storage.ref('/images/'+ file.name).put(file);
     uploadTask.on("state_changed", console.log, console.error, () =>  {
        storage
 	    .ref("images")
 	    .child(file.name)
 	    .getDownloadURL()
-	    .then((url) =>  { 
-               setFile(null);
-	       setURL(url);
+	    .then((myurl) =>  {
+	        alert(myurl);	   
+		this.state.url = myurl;
 	     });
 
     });
 
-    /*const path = `/images/${file.name}`;
-    const ref = storage.ref(path);
-    await ref.put(file);
-    const url = await ref.getDownloadURL();
-    setURL(url);
-    setFile(null); */
   }
 
 
@@ -77,7 +75,8 @@ export default class AddTutorial extends Component {
     let data = {
       title: this.state.title,
       description: this.state.description,
-      published: false
+      published: false,
+      url: this.state.url
     };
 
     MemeDataService.create(data)
@@ -102,8 +101,8 @@ export default class AddTutorial extends Component {
     });
   }
 
-  const [file, setFile] = useState(null);
-  const [url, setURL] = useState("");
+ // const [file, setFile] = useState(null);
+ // const [url, setURL] = useState("");
 
 
   render() { 
@@ -145,11 +144,20 @@ export default class AddTutorial extends Component {
             </div>
 
        <div>
-         <form onSubmit={handleUpload}>
-           <input type="file" onChange={handleChange} />
-             <button disabled={!file}>upload to firebase</button>
+         <form onSubmit= { (event) => {
+              this.handleUpload(event, this.state.file)
+	  }}>
+
+           <input type="file" onChange={ (event) => {
+		  this.onChangeFile(event)
+	           }
+	          } />
+
+
+             <button disabled={!this.state.file}>upload to firebase</button>
           </form>
-          <img src={url} alt="" />
+
+          <img src={this.state.url} alt="" />
         </div>
 
 
